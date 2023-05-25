@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Created by IntelliJ IDEA.
+  User: Mustafa.Boyaci
+  Date: 21.05.2023
+  Time: 21:52
+-->
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+<h:head>
+    <title>Title</title>
+</h:head>
+
+<h:body>
+    <div class="container text-center">
+        <div>
+            <h1>Student List</h1>
+        </div>
+        <div class="card crud-demo">
+            <h:form id="form">
+                <p:growl id="messages" showDetail="true" />
+
+                <p:toolbar>
+                    <p:toolbarGroup>
+                        <p:commandButton value="New" icon="pi pi-plus" actionListener="#{crudView.openNew}"
+                                         update=":dialogs:manage-student-content" oncomplete="PF('manageStudentDialog').show()"
+                                         styleClass="ui-button-success" style="margin-right: .5rem">
+                            <p:resetInput target=":dialogs:manage-student-content" />
+                        </p:commandButton>
+                        <p:commandButton id="delete-students-button" value="#{crudView.deleteButtonMessage}"
+                                         icon="pi pi-trash" actionListener="#{crudView.deleteSelectedStudents()}"
+                                         styleClass="ui-button-danger" disabled="#{!crudView.hasSelectedStudent()}" update="@this">
+                            <p:confirm header="Confirmation" message="Delete the selected students?"
+                                       icon="pi pi-exclamation-triangle" />
+                        </p:commandButton>
+                    </p:toolbarGroup>
+                    <p:toolbarGroup align="right">
+                        <p:fileUpload mode="simple" skinSimple="true" label="Import" chooseIcon="pi pi-download" />
+                        <p:commandButton value="Export" icon="pi pi-upload" styleClass="ui-button-help" ajax="false">
+                            <p:dataExporter type="pdf" target="dt-students" fileName="students" />
+                        </p:commandButton>
+                    </p:toolbarGroup>
+                </p:toolbar>
+
+                <p:dataTable id="dt-students" widgetVar="dtProducts" var="student" value="#{crudView.students}"
+                             reflow="true" styleClass="students-table" selection="#{crudView.selectedStudents}"
+                             rowKey="#{student.id}" paginator="true" rows="10" rowSelectMode="add" paginatorPosition="bottom">
+                    <f:facet name="header">
+                        <div class="students-table-header">
+                            <span style="font-weight: bold">STUDENTS</span>
+                            <span class="filter-container ui-input-icon-left"> <i class="pi pi-search"></i>
+                        <p:inputText id="globalFilter" onkeyup="PF('dtProducts').filter()" placeholder="Search" />
+                    </span>
+                        </div>
+                    </f:facet>
+
+                    <p:ajax event="rowSelect" update=":form:delete-students-button" />
+                    <p:ajax event="rowUnselect" update=":form:delete-students-button" />
+                    <p:ajax event="rowSelectCheckbox" update=":form:delete-students-button" />
+                    <p:ajax event="rowUnselectCheckbox" update=":form:delete-students-button" />
+                    <p:ajax event="toggleSelect" update=":form:delete-students-button" />
+
+                    <p:column selectionMode="multiple" exportable="false"></p:column>
+
+                    <p:column headerText="ID" sortBy="#{student.id}" >
+                        <h:outputText value="#{student.id}" />
+                    </p:column>
+                    <p:column headerText="Name" sortBy="#{student.name}" filterBy="#{student.name}">
+                        <h:outputText value="#{student.name}" />
+                    </p:column>
+                    <p:column headerText="email" sortBy="#{student.email}">
+                        <h:outputText value="#{student.email}" />
+
+                    </p:column>
+                    <p:column headerText="Password" sortBy="#{student.password}" >
+                        <h:outputText value="#{student.password}" />
+                    </p:column>
+                    <p:column headerText="Gender" sortBy="#{student.gender}" >
+                        <h:outputText value="#{student.gender}" />
+                    </p:column>
+                    <p:column headerText="Adress" sortBy="#{student.address}" >
+                        <h:outputText value="#{student.address}" />
+                    </p:column>
+                    <p:column exportable="false">
+                        <p:commandButton icon="pi pi-pencil" update=":dialogs:manage-student-content"
+                                         oncomplete="PF('manageStudentDialog').show()"
+                                         styleClass="edit-button rounded-button ui-button-success" process="@this">
+                            <f:setPropertyActionListener value="#{student}" target="#{crudView.selectedStudent}" />
+                            <p:resetInput target=":dialogs:manage-student-content" />
+                        </p:commandButton>
+                        <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                         process="@this"
+                                         oncomplete="PF('deleteStudentDialog').show()">
+                            <f:setPropertyActionListener value="#{student}" target="#{crudView.selectedStudent}" />
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </h:form>
+            <h:form id="dialogs">
+                <p:dialog header="Student Details" showEffect="fade" modal="true" widgetVar="manageStudentDialog"
+                          responsive="true">
+                    <p:outputPanel id="manage-student-content" class="ui-fluid">
+                        <p:outputPanel rendered="#{not empty crudView.selectedStudent}">
+                            <div class="field">
+                                <p:outputLabel for="name">Name</p:outputLabel>
+                                <p:inputText id="name" value="#{crudView.selectedStudent.name}" required="true" />
+                            </div>
+                            <div class="field">
+                                <p:outputLabel for="email">Email</p:outputLabel>
+                                <p:inputTextarea id="email" value="#{crudView.selectedStudent.email}" />
+                            </div>
+                            <div class="field">
+                                <p:outputLabel for="password">Password</p:outputLabel>
+                                <p:inputTextarea id="password" value="#{crudView.selectedStudent.password}" />
+                            </div>
+                            <div class="field">
+                                <p:outputLabel for="gender">Gender</p:outputLabel>
+                                <p:inputTextarea id="gender" value="#{crudView.selectedStudent.gender}" />
+                            </div>
+                            <div class="field">
+                                <p:outputLabel for="address">Adress</p:outputLabel>
+                                <p:inputTextarea id="address" value="#{crudView.selectedStudent.address}" />
+                            </div>
+                        </p:outputPanel>
+                    </p:outputPanel>
+
+                    <f:facet name="footer">
+                        <p:commandButton value="Save" icon="pi pi-check" actionListener="#{crudView.saveStudent}"
+                                         update="manage-student-content" process="manage-student-content @this" />
+                        <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('manageStudentDialog').hide()"
+                                         class="ui-button-secondary" type="button" />
+                    </f:facet>
+                </p:dialog>
+
+                <p:confirmDialog widgetVar="deleteStudentDialog" showEffect="fade" width="300"
+                                 message="Delete the student?" header="Confirm" severity="warn">
+                    <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{crudView.deleteStudent}"
+                                     process="@this" update=":form:delete-students-button"
+                                     oncomplete="PF('deleteStudentDialog').hide()" />
+                    <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times"
+                                     onclick="PF('deleteStudentDialog').hide()" />
+                </p:confirmDialog>
+
+                <p:confirmDialog global="true" showEffect="fade" width="300">
+                    <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                    <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary"
+                                     icon="pi pi-times" />
+                </p:confirmDialog>
+            </h:form>
+        </div>
+    </div>
+</h:body>
+
+</html>
